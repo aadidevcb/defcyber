@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 db.sqlite3
 *.pyc
 *__pycache__/
@@ -17,3 +18,36 @@ db.sqlite3
 *.vscode
 .idea
 *.DS_Store
+=======
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+>>>>>>> 362ae98 (fix: improved gitignore for frontend and backend)

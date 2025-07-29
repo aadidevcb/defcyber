@@ -1,0 +1,41 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.db
+*.sqlite3
+*.log
+*.env
+*.venv
+.env/
+.venv/
+build/
+dist/
+*.egg-info/
+*.egg/
+*.bak
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
+
+# Strawberry GraphQL (no special files, but ignore generated files if any)
+schema.graphql
+
+# VS Code & IDEs
+.vscode/
+.idea/
+
+# Coverage, test, and cache
+.coverage
+.mypy_cache/
+.pytest_cache/
+*.cover
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
