@@ -1,24 +1,3 @@
-<<<<<<< HEAD
-db.sqlite3
-*.pyc
-*__pycache__/
-*.pyo
-*.pyd
-*.db
-*.sqlite3
-*.log
-*.env
-*.venv
-*.egg-info
-*.egg
-*.dist-info
-*.coverage
-*.mypy_cache
-*.pytest_cache
-*.vscode
-.idea
-*.DS_Store
-=======
 # Node modules
 node_modules/
 npm-debug.log*
@@ -50,4 +29,3 @@ Thumbs.db
 
 # Misc
 *.log
->>>>>>> 362ae98 (fix: improved gitignore for frontend and backend)
