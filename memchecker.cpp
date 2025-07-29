@@ -216,7 +216,7 @@ int main() {
         if (check == 1) {
             count++;
             std::string meta_hash = extract_hash_from_meta("./Temp/memdump_meta.txt");
-            std::string file_hash = compute_sha256("./ori/memdump.bin");
+            std::string file_hash = compute_sha256("./original_mem_dump/memdump.bin");
 
             std::cout << "Extracted hash:  " << meta_hash << "\n";
             std::cout << "Computed hash:   " << file_hash << "\n";
