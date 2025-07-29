@@ -3,16 +3,30 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
+
+
 export default function Home() {
   const [authModalOpen, setAuthModalOpen] = useState(true);
   const [lockdownActive, setLockdownActive] = useState(false);
+  const [showLockdownDialog, setShowLockdownDialog] = useState(false);
 
-  // Add confirmation before lockdown
-  const lockdown = () => {
-    if (window.confirm('Are you sure you want to initiate lockdown?')) {
-      setLockdownActive(true);
-    }
-  };
+   const handleLockdownConfirm = () => {
+    setShowLockdownDialog(false);
+  setTimeout(() => {
+    setLockdownActive(true);
+  }, 500); 
+};
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6">
@@ -55,11 +69,34 @@ export default function Home() {
           <div className="border rounded-lg p-4 shadow-sm relative">
             {/* Top right lockdown button */}
             <div className="absolute top-4 right-4">
-              <Button variant="destructive" size="sm" onClick={lockdown}>
-                Initiate Lockdown
-              </Button>
+               <Button
+              variant="destructive"
+              size="sm"
+              onClick={()=> setShowLockdownDialog(true)}
+            >
+              Initiate Lockdown
+            </Button>
             </div>
 
+          <AlertDialog open={showLockdownDialog} onOpenChange={setShowLockdownDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirm Lockdown</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to initiate lockdown? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction asChild>
+                  <Button variant="destructive" onClick={handleLockdownConfirm}>
+                    Yes, Lockdown
+                  </Button>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
             <h2 className="text-md font-semibold mb-2 flex items-center gap-2">
               Firewall Status Display
               <Badge variant="default" className="bg-green-500 text-white">Running</Badge>
