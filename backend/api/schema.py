@@ -25,12 +25,5 @@ class Query:
         else:
             return HashCheckResult(exists=False)
 
-@strawberry.type
-class Mutation:
-    @strawberry.mutation
-    def add_file(self, file_name: str) -> AddFileResult:
-        hash_key = hashlib.sha256(file_name.encode()).hexdigest()
-        created = FileHash.objects.get_or_create(file_name=file_name, hash_key=hash_key)
-        return AddFileResult(success=created, file_name=file_name, hash_key=hash_key)
 
-schema = strawberry.Schema(query=Query, mutation=Mutation)
+schema = strawberry.Schema(query=Query)
