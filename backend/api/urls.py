@@ -14,9 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path
+import strawberry
+from strawberry.django.views import GraphQLView
+
+@strawberry.type
+class Query:
+    hello: str = "Hello, world!"
+
+schema = strawberry.Schema(query=Query)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('graphql/', GraphQLView.as_view(schema=schema)),
 ]
