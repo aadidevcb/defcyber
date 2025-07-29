@@ -1,103 +1,109 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [authModalOpen, setAuthModalOpen] = useState(true);
+  const [lockdownActive, setLockdownActive] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Add confirmation before lockdown
+  const lockdown = () => {
+    if (window.confirm('Are you sure you want to initiate lockdown?')) {
+      setLockdownActive(true);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground p-6">
+      <div
+  style={{
+    position: 'absolute',
+    top: '0.3cm',
+    right: '1cm',
+    zIndex: 100,
+  }}
+>
+  <Button
+    className="bg-gradient-to-r from-gray-800 via-gray-700 to-black text-white font-semibold px-6 py-2 rounded shadow"
+    onClick={() => window.open('https://your-link-here.com', '_blank')}
+  >
+    Authenticate Owner
+  </Button>
+</div>
+      <h1 className="text-center text-2xl font-bold mb-8">System</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Left Column: Memory */}
+        <div className="border rounded-lg p-6 shadow-md">
+          <h2 className="text-lg font-semibold mb-4">Memory Monitor Display</h2>
+          <div className="h-48 bg-gray-100 dark:bg-gray-800 rounded p-4 flex items-center justify-center">
+            <p className="text-center">[Memory Usage Stats]</p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Right Column: Backup + Firewall */}
+        <div className="flex flex-col gap-6">
+          <div className="border rounded-lg p-4 shadow-sm">
+            <h2 className="text-md font-semibold mb-2">Backup Status Display</h2>
+            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded">
+              <p>Backup size: 1.2GB</p>
+              <p>Copies: 3</p>
+              <p>Last backup: 2025-07-28</p>
+            </div>
+          </div>
+
+          <div className="border rounded-lg p-4 shadow-sm relative">
+            {/* Top right lockdown button */}
+            <div className="absolute top-4 right-4">
+              <Button variant="destructive" size="sm" onClick={lockdown}>
+                Initiate Lockdown
+              </Button>
+            </div>
+
+            <h2 className="text-md font-semibold mb-2 flex items-center gap-2">
+              Firewall Status Display
+              <Badge variant="default" className="bg-green-500 text-white">Running</Badge>
+            </h2>
+            <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded">
+              <p>Open ports: 3</p>
+              <p>Data flowing: 56.2MB/s</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* AUTH MODAL */}
+      {authModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-[#111] p-6 rounded-lg w-full max-w-sm">
+            <h2 className="text-xl font-bold mb-4">Authenticate</h2>
+            <input className="w-full mb-2 p-2 border" placeholder="Username" />
+            <input className="w-full mb-4 p-2 border" type="password" placeholder="Password" />
+            <Button
+              onClick={() => setAuthModalOpen(false)}
+              className="w-full bg-gradient-to-r from-gray-800 via-gray-700 to-black text-white font-semibold"
+            >
+              Sign In
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* LOCKDOWN POPUP */}
+      {lockdownActive && (
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
+          <div className="bg-red-600 dark:bg-red-800 p-6 rounded-lg w-full max-w-md text-center">
+            <h2 className="text-2xl font-bold text-white mb-4">🚨 LOCKDOWN INITIATED</h2>
+            <p className="text-base text-white">Critical alert: system is now restricted to OWNER-level operations.</p>
+            <Button
+              onClick={() => setLockdownActive(false)}
+              className="mt-6"
+            >
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
