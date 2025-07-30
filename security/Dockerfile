@@ -12,6 +12,6 @@ RUN g++ -o mem_check memchecker.cpp -lssl -lcrypto \
     && g++ -o legacy legacy.cpp \
     && g++ -o backup backup.cpp
 
-RUN apk add --no-cache iptables && chmod +x mem_check legacy backup entrypoint.sh
+RUN apk add --no-cache iptables && chmod +x mem_check legacy backup entrypoint.sh && mkdir -p /app/backupdir
 
 CMD ["sh", "./entrypoint.sh"]
