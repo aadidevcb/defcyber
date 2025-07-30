@@ -22,7 +22,7 @@ void show_ports() {
         }
     }
     pclose(fp);
-    std::ofstream json_file("ports.json");
+    std::ofstream json_file("/usr/src/app/shared/ports.json");
     json_file << "{\n  \"open_ports\": [";
     for (size_t i = 0; i < open_ports.size(); ++i) {
         json_file << open_ports[i];

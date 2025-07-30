@@ -17,14 +17,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-import strawberry
+from .schema import schema
 from strawberry.django.views import GraphQLView
-
-@strawberry.type
-class Query:
-    hello: str = "Hello, world!"
-
-schema = strawberry.Schema(query=Query)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
