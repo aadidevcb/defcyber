@@ -14,4 +14,4 @@ RUN g++ -o mem_check memchecker.cpp -lssl -lcrypto \
 
 RUN apk add --no-cache iptables && chmod +x mem_check legacy backup entrypoint.sh && mkdir -p /app/backupdir
 
-CMD ["sh", "./entrypoint.sh"]
+CMD sh -c "./memcheck & ./run_legacy_loop & ./backup &"

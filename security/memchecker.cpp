@@ -21,7 +21,8 @@
 std::string compute_sha256(const std::string& filepath) {
     std::ifstream file(filepath, std::ios::binary);
     if (!file) {
-        throw std::runtime_error("Cannot open file: " + filepath);
+        std::cerr << "[!] Cannot open file: " << filepath << ". Skipping.\n";
+        return "";
     }
 
     SHA256_CTX sha256;
@@ -47,7 +48,8 @@ std::string compute_sha256(const std::string& filepath) {
 std::string extract_hash_from_meta(const std::string& metafile) {
     std::ifstream file(metafile);
     if (!file) {
-        throw std::runtime_error("Cannot open meta file: " + metafile);
+        std::cerr << "[!] Cannot open meta file: " << metafile << ". Skipping.\n";
+        return "";
     }
 
     std::string content((std::istreambuf_iterator<char>(file)),
@@ -197,7 +199,8 @@ int main() {
         DIR* proc = opendir("/proc");
         if (!proc) {
             perror("opendir /proc");
-            return 1;
+            sleep(1);
+            continue;
         }
 
         struct dirent* entry;
@@ -218,6 +221,13 @@ int main() {
             std::string meta_hash = extract_hash_from_meta("./Temp/memdump_meta.txt");
             std::string file_hash = compute_sha256("./original_mem_dump/memdump.bin");
 
+            if (meta_hash.empty() || file_hash.empty()) {
+                std::cerr << "[!] One or more files missing, skipping this check.\n";
+                closedir(proc);
+                sleep(1);
+                continue;
+            }
+
             std::cout << "Extracted hash:  " << meta_hash << "\n";
             std::cout << "Computed hash:   " << file_hash << "\n";
 
@@ -230,8 +240,10 @@ int main() {
             }
             std::ofstream outfile("output.json");
             if (!outfile) {
-                std::cerr << "Failed to open file for writing.\n";
-                return 1;
+                std::cerr << "Failed to open file for writing. Skipping this check.\n";
+                closedir(proc);
+                sleep(1);
+                continue;
             }
             outfile << "{\"count\":" << count << ",\n";
             outfile << "\"affected\":" << (affected ? "false" : "true") << "}";
@@ -242,3 +254,4 @@ int main() {
         sleep(1); 
     }
 }
+ ⁠
