@@ -21,8 +21,7 @@
 std::string compute_sha256(const std::string& filepath) {
     std::ifstream file(filepath, std::ios::binary);
     if (!file) {
-        std::cerr << "[!] Cannot open file: " << filepath << ". Skipping.\n";
-        return "";
+        throw std::runtime_error("Cannot open file: " + filepath);
     }
 
     SHA256_CTX sha256;
@@ -48,8 +47,7 @@ std::string compute_sha256(const std::string& filepath) {
 std::string extract_hash_from_meta(const std::string& metafile) {
     std::ifstream file(metafile);
     if (!file) {
-        std::cerr << "[!] Cannot open meta file: " << metafile << ". Skipping.\n";
-        return "";
+        throw std::runtime_error("Cannot open meta file: " + metafile);
     }
 
     std::string content((std::istreambuf_iterator<char>(file)),
@@ -199,8 +197,7 @@ int main() {
         DIR* proc = opendir("/proc");
         if (!proc) {
             perror("opendir /proc");
-            sleep(1);
-            continue;
+            return 1;
         }
 
         struct dirent* entry;
@@ -221,13 +218,6 @@ int main() {
             std::string meta_hash = extract_hash_from_meta("./Temp/memdump_meta.txt");
             std::string file_hash = compute_sha256("./original_mem_dump/memdump.bin");
 
-            if (meta_hash.empty() || file_hash.empty()) {
-                std::cerr << "[!] One or more files missing, skipping this check.\n";
-                closedir(proc);
-                sleep(1);
-                continue;
-            }
-
             std::cout << "Extracted hash:  " << meta_hash << "\n";
             std::cout << "Computed hash:   " << file_hash << "\n";
 
@@ -238,12 +228,10 @@ int main() {
                 std::cout << "[-] Hashes do NOT match.\n";
                 affected = true;
             }
-            std::ofstream outfile("output.json");
+            std::ofstream outfile("/usr/src/app/shared/output.json");
             if (!outfile) {
-                std::cerr << "Failed to open file for writing. Skipping this check.\n";
-                closedir(proc);
-                sleep(1);
-                continue;
+                std::cerr << "Failed to open file for writing.\n";
+                return 1;
             }
             outfile << "{\"count\":" << count << ",\n";
             outfile << "\"affected\":" << (affected ? "false" : "true") << "}";
@@ -254,4 +242,3 @@ int main() {
         sleep(1); 
     }
 }
- ⁠
