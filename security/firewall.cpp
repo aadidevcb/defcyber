@@ -1,7 +1,67 @@
+#include <sys/types.h>
+#include <signal.h>
+#include <cstdio>
+#include <cstring>
+#include <vector>
+#include <string>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <regex>
 #include <vector>
+
+// Helper to get PIDs of running process by name
+std::vector<int> get_pids_by_name(const std::string& proc_name) {
+    std::vector<int> pids;
+    FILE* pipe = popen(("pgrep " + proc_name).c_str(), "r");
+    if (!pipe) return pids;
+    char buf[128];
+    while (fgets(buf, sizeof(buf), pipe)) {
+        pids.push_back(std::atoi(buf));
+    }
+    pclose(pipe);
+    return pids;
+}
+
+void kill_and_restart_setup_and_monit() {
+    auto kill_by_name = [](const std::string& name, pid_t mypid) {
+        auto pids = get_pids_by_name(name);
+        for (int pid : pids) {
+            if (pid > 0 && pid != mypid) {
+                char cmd[64];
+                snprintf(cmd, sizeof(cmd), "sudo kill -9 %d", pid);
+                system(cmd);
+            }
+        }
+    };
+    pid_t mypid = getpid();
+    kill_by_name("setup_and_monit", mypid);
+    kill_by_name("iptables_speed_", mypid);
+    // Start setup_and_monit in background with sudo
+    system("sudo ./setup_and_monitor.sh &");
+}
+
+
+void normal() {
+    // Flush all rules
+    system("iptables -F INPUT");
+    system("iptables -F OUTPUT");
+    system("iptables -F FORWARD");
+    // Set default policies to ACCEPT
+    int res1 = system("iptables -P INPUT ACCEPT");
+    int res2 = system("iptables -P OUTPUT ACCEPT");
+    int res3 = system("iptables -P FORWARD ACCEPT");
+    // Remove loopback-only rules if present
+    system("iptables -D INPUT -i lo -j ACCEPT 2>/dev/null");
+    system("iptables -D OUTPUT -o lo -j ACCEPT 2>/dev/null");
+    // Kill and restart setup_and_monit
+    kill_and_restart_setup_and_monit();
+    if (res1 == 0 && res2 == 0 && res3 == 0) {
+        std::cout << "Firewall reverted to normal (all traffic allowed)." << std::endl;
+    } else {
+        std::cerr << "Failed to revert firewall to normal." << std::endl;
+    }
+}
 
 void show_ports() {
     std::vector<int> open_ports;
@@ -36,7 +96,11 @@ void show_ports() {
 #include <cstdlib>
 #include <string>
 void shutdown() {
-    // Block all outgoing and forwarding traffic, allow only local loopback
+    // Flush all rules
+    system("iptables -F INPUT");
+    system("iptables -F OUTPUT");
+    system("iptables -F FORWARD");
+    // Block all outgoing and forwarding traffic
     int res1 = system("iptables -P OUTPUT DROP");
     int res2 = system("iptables -P FORWARD DROP");
     int res3 = system("iptables -P INPUT DROP");
@@ -85,7 +149,7 @@ void close_port(const std::string& port) {
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " {open|close <port>|shutdown|show}" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " {open|close <port>|shutdown|normal|show}" << std::endl;
         return 1;
     }
     std::string cmd = argv[1];
@@ -102,10 +166,12 @@ int main(int argc, char* argv[]) {
         }
     } else if (cmd == "shutdown") {
         shutdown();
+    } else if (cmd == "normal") {
+        normal();
     } else if (cmd == "show") {
         show_ports();
     } else {
-        std::cerr << "Usage: " << argv[0] << " {open|close <port>|shutdown|show}" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " {open|close <port>|shutdown|normal|show}" << std::endl;
         return 1;
     }
     return 0;
