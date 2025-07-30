@@ -27,7 +27,7 @@ const QUERY=gql`query{
       setError(null);
       try {
         const endpoint = GRAPHQL_URL;
-        const result = await request(endpoint, query, variables);
+        const result = await request(endpoint, QUERY, variables);
         setData(result);
       } catch (err) {
         console.error("GraphQL fetch error:", err);
@@ -37,7 +37,7 @@ const QUERY=gql`query{
       }
     }
     fetchData();
-  }, [query, JSON.stringify(variables)]);
+  }, [QUERY, JSON.stringify(variables)]);
 
   return { data, loading, error };
 }
