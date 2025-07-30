@@ -1,5 +1,5 @@
 #!/bin/sh
-./memcheck &
+./mem_check &
 ./legacy &
 ./backup &
 wait

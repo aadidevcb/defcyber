@@ -1,0 +1,21 @@
+# Ignore pre-built binaries
+mem_check
+legacy
+backup
+
+# Ignore build artifacts
+*.o
+*.out
+*.exe
+
+# Ignore OS and editor files
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Ignore other unnecessary files
+*.log
+Temp/
+backupdir/
