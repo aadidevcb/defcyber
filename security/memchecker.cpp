@@ -234,7 +234,7 @@ int main() {
                 return 1;
             }
             outfile << "{\"count\":" << count << ",\n";
-            outfile << "\"affected\":" << (affected ? "true" : "false") << "}";
+            outfile << "\"affected\":" << (affected ? "false" : "true") << "}";
             outfile.close();
             std::cout << "Data written to output.json\n";
         }
