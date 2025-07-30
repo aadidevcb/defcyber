@@ -1,4 +1,6 @@
 'use client';
+import { request } from 'graphql-request';
+import { gql } from 'graphql-request';
 import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +27,21 @@ import {
   Legend,
 } from 'chart.js';
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
+const QUERY=gql`query{
+  checkFileHash{
+      exists
+    }
+  getOutput{
+      count
+    }
+  getPorts{
+      openPorts
+    }
+  }`;
+
+// Fetch profile data
+const GRAPHQL_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/graphql/";
+
 
 export default function Home() {
   const [authModalOpen, setAuthModalOpen] = useState(true);
@@ -32,6 +49,7 @@ export default function Home() {
   const [showLockdownDialog, setShowLockdownDialog] = useState(false);
 
   // Memory Monitor state
+  
   const [dataPoints, setDataPoints] = useState([]);
   const intervalRef = useRef();
 
@@ -67,6 +85,14 @@ export default function Home() {
   intervalRef.current = setInterval(fetchData, 3000);
   return () => clearInterval(intervalRef.current);
 }, []);
+ useEffect(() => {
+    async function fetchOrders() {
+      try {
+        const endpoint = GRAPHQL_URL;
+        const result = await request(
+          endpoint, 
+          ORDERS_QUERY,
+        );
 
   const handleLockdownConfirm = () => {
     setShowLockdownDialog(false);
@@ -106,6 +132,7 @@ export default function Home() {
             Authenticate Owner
           </Button>
         </div>
+        <p>{data?.checkFileHash?.exists ? "File is being monitored." : "File is not being monitored."}</p>
         <h1 className="text-center text-2xl font-bold mb-8">System</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Column: Memory */}
@@ -261,6 +288,7 @@ export default function Home() {
             </div>
           </div>
         )}
+
 
         {/* LOCKDOWN POPUP */}
         {lockdownActive && (
