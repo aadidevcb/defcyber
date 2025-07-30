@@ -6,11 +6,10 @@ import docker
 import time
 
 # CONFIGURABLES
-SHARED_FOLDER = os.path.join(os.path.dirname(__file__), 'security')
+SHARED_FOLDER = os.path.join('/usr/src/app/shared/')
 NETWORK_FILE = os.path.join(SHARED_FOLDER, 'network.json')
 PORTS_FILE = os.path.join(SHARED_FOLDER, 'ports.json')
-ALLOWED_PORTS = [22, 80, 443]  # Update as needed
-DOCKER_CONTAINER_NAME = "my_container"  # Change to your actual container name
+ALLOWED_PORTS = [22, 80, 443] 
 
 def network_check():
     try:
@@ -43,20 +42,41 @@ def ports_open():
 def shutdown():
     try:
         client = docker.from_env()
-        container = client.containers.get(DOCKER_CONTAINER_NAME)
-        exec_log = container.exec_run("/app/firewall shutdown", stdout=True, stderr=True)
-        print("Shutdown Output:", exec_log.output.decode())
+        # Get the first running container's ID as in your working example
+        containers = client.containers.list()
+        if not containers:
+            print("No running containers found.")
+            return
+        container_id = str(containers[1])[-13:-1]
+        container = client.containers.get(container_id)
+        exec_log = container.exec_run("./firewall shutdown", stdout=True, stderr=True)
+        print("Exit Code:", exec_log.exit_code)
+        print("Shutdown Output:\n", exec_log.output.decode())
+    except docker.errors.NotFound:
+        print("Error: Container not found.")
+    except docker.errors.APIError as e:
+        print("Docker API error:", str(e))
     except Exception as e:
-        print(f"Error during shutdown: {e}")
+        print("Unexpected error:", str(e))
 
 def reset():
     try:
         client = docker.from_env()
-        container = client.containers.get(DOCKER_CONTAINER_NAME)
-        exec_log = container.exec_run("/app/firewall normal", stdout=True, stderr=True)
-        print("Reset Output:", exec_log.output.decode())
+        containers = client.containers.list()
+        if not containers:
+            print("No running containers found.")
+            return
+        container_id = str(containers[1])[-13:-1]
+        container = client.containers.get(container_id)
+        exec_log = container.exec_run("./firewall normal", stdout=True, stderr=True)
+        print("Exit Code:", exec_log.exit_code)
+        print("Reset Output:\n", exec_log.output.decode())
+    except docker.errors.NotFound:
+        print("Error: Container not found.")
+    except docker.errors.APIError as e:
+        print("Docker API error:", str(e))
     except Exception as e:
-        print(f"Error during reset: {e}")
+        print("Unexpected error:", str(e))
 
 def run_manager_loop(interval=5):
     print("Starting manager loop. Press Ctrl+C to stop.")

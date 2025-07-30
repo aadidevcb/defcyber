@@ -47,19 +47,22 @@ std::string compute_sha256(const std::string& filepath) {
 std::string extract_hash_from_meta(const std::string& metafile) {
     std::ifstream file(metafile);
     if (!file) {
-        throw std::runtime_error("Cannot open meta file: " + metafile);
+        std::cerr << "Cannot open meta file: " << metafile << std::endl;
+        return "";
     }
 
     std::string content((std::istreambuf_iterator<char>(file)),
                          std::istreambuf_iterator<char>());
 
-    std::regex re("\"\\[heap\\]\"\\s*:\\s*\"([a-fA-F0-9]+)\"");
+    // Match the first r-xp region for the legacy binary (path contains "legacy" and perms is r-xp)
+    std::regex re("\\\"([^\\\"]*legacy[^\\\"]* r-xp)\\\"\\s*:\\s*\\\"([a-fA-F0-9]+)\\\"");
     std::smatch match;
     if (std::regex_search(content, match, re)) {
-        return match[1];
+        return match[2];
     }
 
-    throw std::runtime_error("SHA256 value for [heap] not found in meta file.");
+    std::cout << "Couldn't find legacy r-xp section in meta file." << std::endl;
+    return "";
 }
 
 
@@ -111,10 +114,10 @@ void dump_memory(pid_t pid) {
         sscanf(line.c_str(), "%lx-%lx %4s %*s %*s %*s %255[^\n]", &start, &end, perms, path_buf);
         std::string path = path_buf;
 
-        // Only read [heap]
-        bool is_heap = path.find("[heap]") != std::string::npos;
-        if (!is_heap) continue;
-        if (perms[0] != 'r' || perms[1] != 'w') continue;
+        // Only read the r-xp region for legacy binary (match both /app/legacy and full path)
+        bool is_exec = (perms[0] == 'r' && perms[2] == 'x');
+        bool is_legacy = (path.find("legacy") != std::string::npos);
+        if (!(is_exec && is_legacy)) continue;
 
         size_t region_size = end - start;
         std::vector<char> buffer(region_size);
@@ -132,8 +135,10 @@ void dump_memory(pid_t pid) {
         for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i)
             hash_str << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
 
-        // Store hash
-        region_hashes["[heap]"] = hash_str.str();
+        // Store hash with full region key
+        std::ostringstream region_key;
+        region_key << path << " " << std::hex << start << "-" << end << " " << perms;
+        region_hashes[region_key.str()] = hash_str.str();
 
         // Write memory
         out.write(buffer.data(), bytes_read);
@@ -148,7 +153,7 @@ void dump_memory(pid_t pid) {
     }
     meta << "}\n";
 
-    std::cout << "[+] Dumped [heap] memory only.\n";
+    std::cout << "[+] Dumped memory.\n";
 }
 
 
@@ -228,13 +233,13 @@ int main() {
                 std::cout << "[-] Hashes do NOT match.\n";
                 affected = true;
             }
-            std::ofstream outfile("/usr/src/app/shared/output.json");
+            std::ofstream outfile("/usr/src/app/shared/output.json"); ///usr/src/app/shared/
             if (!outfile) {
                 std::cerr << "Failed to open file for writing.\n";
                 return 1;
             }
             outfile << "{\"count\":" << count << ",\n";
-            outfile << "\"affected\":" << (affected ? "false" : "true") << "}";
+            outfile << "\"affected\":" << (affected ? "true" : "false") << "}";
             outfile.close();
             std::cout << "Data written to output.json\n";
         }
