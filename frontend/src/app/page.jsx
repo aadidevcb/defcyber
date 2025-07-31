@@ -175,7 +175,7 @@ function Home() {
         >
           <Button
             className="bg-gradient-to-r from-gray-800 via-gray-700 to-black text-white font-semibold px-6 py-2 rounded shadow"
-            onClick={() => window.open('127.0.0.1:8000/admin', '_blank')}
+            onClick={() => window.open('http://127.0.0.1:8000/admin', '_blank')}
           >
             Authenticate Owner
           </Button>
