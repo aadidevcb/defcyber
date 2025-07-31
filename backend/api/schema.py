@@ -6,6 +6,10 @@ import json
 @strawberry.type
 class HashCheckResult:
     exists: bool
+@strawberry.type
+class NetworkType:
+    down:int
+    up:int
 
 @strawberry.type
 class AddFileResult:
@@ -30,10 +34,11 @@ class Query:
         hash_obj = FileHash.objects.first()
         try:
             with open("/usr/src/app/shared/legacy.txt", "r") as f:
-                content = f.read().strip()
+                content = f.read().strip().split(' ')[0]
             exists = content == hash_obj.hash_key
         except Exception:
             exists = False
+        print(f"{hash_obj} {content} {exists}")
         return HashCheckResult(exists=exists)
 
     @strawberry.field
@@ -47,8 +52,32 @@ class Query:
         with open("/usr/src/app/shared/output.json") as f:
             data = json.load(f)
         return OutputData(count=data.get("count", 0), affected=data.get("affected", False))
+
     @strawberry.field
-    def hello(self) -> str:
-        return "world"
+    def lockdown(self) -> bool:
+        result = os.system('python manager.py shutdown')
+        return result == 0
+    
+    @strawberry.field
+    def network_check(self) -> bool:
+        result = os.system('python manager.py network_check')
+        return result == 0
+
+    @strawberry.field
+    def release_lockdown(self) -> bool:
+        result = os.system('python manager.py reset')
+        return result == 0
+    
+    @strawberry.field
+    def network_info(self) -> NetworkType:
+        with open("/usr/src/app/shared/network.json") as f:
+            data = json.load(f)
+        return NetworkType(down=data.get("down", 0), up=data.get("up", 0))
+    
+    @strawberry.field
+    def open_ports(self) -> bool:
+        result = os.system('python manager.py ports_open')
+        return result == 0
+
 
 schema = strawberry.Schema(query=Query)
