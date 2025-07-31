@@ -4,33 +4,21 @@ import { gql } from 'graphql-request';
 
 const GRAPHQL_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/graphql/";
 
-export default function useFetchGraphQL(variables = {}) {
-const QUERY=gql`query{
-    checkFileHash{
-      exists
-    }
-    getOutput{
-      count
-    }
-    getPorts{
-      openPorts
-    }
-  }`;
-  
+export default function useFetchGraphQL(QUERY, variables = {}, { refetchInterval } = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const stringifiedVariables = JSON.stringify(variables);
+
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
+    const fetchData = async () => {
       try {
         const endpoint = GRAPHQL_URL;
         const token = typeof window !== "undefined" ? localStorage.getItem('token') : null;
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
         const result = await request(endpoint, QUERY, variables, headers);
+        console.log("Fetched data:", result);
         setData(result);
       } catch (err) {
         console.error("GraphQL fetch error:", err);
@@ -38,9 +26,15 @@ const QUERY=gql`query{
       } finally {
         setLoading(false);
       }
-    }
+    };
+
     fetchData();
-  }, [QUERY, JSON.stringify(variables)]);
+
+    if (refetchInterval) {
+      const intervalId = setInterval(fetchData, refetchInterval);
+      return () => clearInterval(intervalId);
+    }
+  }, [QUERY, stringifiedVariables, refetchInterval]);
 
   return { data, loading, error };
 }
