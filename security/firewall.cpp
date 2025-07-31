@@ -10,6 +10,7 @@
 #include <fstream>
 #include <regex>
 #include <vector>
+#include <unistd.h>
 
 // Helper to get PIDs of running process by name
 std::vector<int> get_pids_by_name(const std::string& proc_name) {
@@ -30,7 +31,7 @@ void kill_and_restart_setup_and_monit() {
         for (int pid : pids) {
             if (pid > 0 && pid != mypid) {
                 char cmd[64];
-                snprintf(cmd, sizeof(cmd), "sudo kill -9 %d", pid);
+                snprintf(cmd, sizeof(cmd), "kill -9 %d", pid);
                 system(cmd);
             }
         }
@@ -39,7 +40,7 @@ void kill_and_restart_setup_and_monit() {
     kill_by_name("setup_and_monit", mypid);
     kill_by_name("iptables_speed_", mypid);
     // Start setup_and_monit in background with sudo
-    system("sudo ./setup_and_monitor.sh &");
+    system("./setup_and_monitor.sh &");
 }
 
 

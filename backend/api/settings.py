@@ -25,7 +25,14 @@ SECRET_KEY = 'django-insecure-jsxug_urcn06)eein&w@i&os$s0m!&-r2=wuy(pnlrkrkq%i*0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
+
+# Allow frontend origin for CSRF
+CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
 ]
 
@@ -43,6 +50,13 @@ INSTALLED_APPS = [
     'strawberry.django',
 ]
 
+INSTALLED_APPS += ['rest_framework']
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -52,6 +66,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+INSTALLED_APPS += ['corsheaders']
+MIDDLEWARE = ['corsheaders.middleware.CorsMiddleware'] + MIDDLEWARE
+CORS_ALLOW_ALL_ORIGINS = True 
 
 ROOT_URLCONF = 'api.urls'
 

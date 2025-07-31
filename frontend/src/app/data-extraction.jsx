@@ -27,7 +27,10 @@ const QUERY=gql`query{
       setError(null);
       try {
         const endpoint = GRAPHQL_URL;
-        const result = await request(endpoint, QUERY, variables);
+        const token = typeof window !== "undefined" ? localStorage.getItem('token') : null;
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const result = await request(endpoint, QUERY, variables, headers);
         setData(result);
       } catch (err) {
         console.error("GraphQL fetch error:", err);

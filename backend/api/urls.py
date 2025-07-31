@@ -18,9 +18,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from .schema import schema
-from strawberry.django.views import GraphQLView
+from .views import ApiTokenView, AuthGraphQLView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('graphql/', GraphQLView.as_view(schema=schema)),
+    path('graphql/', AuthGraphQLView.as_view(schema=schema)),
+    path('api/token/', ApiTokenView.as_view(), name='api_token'),
 ]

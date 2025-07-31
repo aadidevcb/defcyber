@@ -26,20 +26,41 @@ import {
   Legend,
 } from 'chart.js';
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
-// GraphQL query and fetching handled by useFetchGraphQL hook
+// GraphQL query and fetching handled by useFetchGraphQL
 
 // Fetch profile data
 
 
 function Home() {
-  const [authModalOpen, setAuthModalOpen] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [lockdownActive, setLockdownActive] = useState(false);
   const [showLockdownDialog, setShowLockdownDialog] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsAuthenticated(!!localStorage.getItem('token'));
+    }
+  }, []);
 
   // Use the custom hook to fetch GraphQL data
   const { data, loading, error } = useFetchGraphQL();
 
-
+  // Debug: log GraphQL data and error after fetch
+  useEffect(() => {
+    if (typeof window !== "undefined" && !loading) {
+      console.log('GraphQL data:', data);
+      console.log('GraphQL error:', error);
+    }
+    else{
+      console.log('Loading GraphQL data...');
+      console.log('GraphQL error:', error);
+    }
+  }, [loading, data, error]);
 
   const handleLockdownConfirm = () => {
     setShowLockdownDialog(false);
@@ -48,6 +69,84 @@ function Home() {
     }, 500);
   };
 
+  // Login handler
+  const handleLogin = async () => {
+    setLoginError("");
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/token/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword })
+      });
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setIsAuthenticated(true);
+        setLoginModalOpen(false);
+      } else {
+        setLoginError("Invalid credentials");
+      }
+    } catch (e) {
+      setLoginError("Login failed");
+    }
+  };
+  // Show only login modal button by default
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Button
+          className="bg-gradient-to-r from-blue-800 via-blue-700 to-black text-white font-semibold px-6 py-2 rounded shadow"
+          onClick={() => setLoginModalOpen(true)}
+        >
+          Authenticate User
+        </Button>
+        {loginModalOpen && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-black p-6 rounded-lg w-full max-w-sm shadow-2xl">
+              <h2 className="text-xl font-bold mb-4" style={{ color: "#b3cfff" }}>User Login</h2>
+              <input
+                className="w-full mb-2 p-2 border border-blue-500 bg-black text-blue-200 placeholder-blue-400 focus:ring-2 focus:ring-blue-500"
+                placeholder="Username"
+                value={loginUsername}
+                onChange={e => setLoginUsername(e.target.value)}
+                style={{ boxShadow: "0 0 8px #0ff" }}
+              />
+              <input
+                className="w-full mb-4 p-2 border border-blue-500 bg-black text-blue-200 placeholder-blue-400 focus:ring-2 focus:ring-blue-500"
+                type="password"
+                placeholder="Password"
+                value={loginPassword}
+                onChange={e => setLoginPassword(e.target.value)}
+                style={{ boxShadow: "0 0 8px #0ff" }}
+              />
+              {loginError && <p className="text-red-500 mb-2">{loginError}</p>}
+              <Button
+                onClick={handleLogin}
+                className="w-full bg-sky-900 text-cyan-100 font-semibold mb-2"
+              >
+                Log In
+              </Button>
+              <Button
+                onClick={() => setLoginModalOpen(false)}
+                className="w-full bg-gray-800 text-gray-100 font-semibold"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+    setLoginModalOpen(false);
+  };
+
+  // Show rest of the page only after login
   return (
     <div className="min-h-screen bg-black text-foreground p-6 relative overflow-hidden">
       <video
@@ -70,13 +169,21 @@ function Home() {
             top: '0.3cm',
             right: '1cm',
             zIndex: 100,
+            display: 'flex',
+            gap: '1rem',
           }}
         >
           <Button
             className="bg-gradient-to-r from-gray-800 via-gray-700 to-black text-white font-semibold px-6 py-2 rounded shadow"
-            onClick={() => window.open('127.0.0.1:8000/admin', '_blank')}
+            onClick={() => window.open('http://127.0.0.1:8000/admin', '_blank')}
           >
             Authenticate Owner
+          </Button>
+          <Button
+            className="bg-gradient-to-r from-red-800 via-red-700 to-black text-white font-semibold px-6 py-2 rounded shadow"
+            onClick={handleLogout}
+          >
+            Logout
           </Button>
         </div>
 
@@ -153,10 +260,10 @@ function Home() {
                 style={{ backgroundColor: 'rgba(20, 184, 166, 0.3)' }}
                 className="rounded p-3 shadow-lg transition-transform duration-300 scale-100 hover:scale-105 h-30"
               >
-                {Array.isArray(data?.getOutput?.history) && data.getOutput.history.length > 0 ? (
+                {Array.isArray(data?.getOutput?.count) && data.getOutput.count.length > 0 ? (
                   <>
-                    <p>Current Count: {data.getOutput.history[data.getOutput.history.length - 1].count}</p>
-                    <p>Last Updated: {data.getOutput.history[data.getOutput.history.length - 1].time}</p>
+                    <p>Current Count: {data.getOutput.count[data.getOutput.count.length - 1].count}</p>
+                    <p>Last Updated: {data.getOutput.count[data.getOutput.count.length - 1].time}</p>
                   </>
                 ) : (
                   <p>No memory data available.</p>
@@ -243,5 +350,4 @@ function Home() {
     </div>
   );
 }
-
 export default Home;
