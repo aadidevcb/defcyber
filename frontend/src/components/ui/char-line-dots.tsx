@@ -66,7 +66,11 @@ export function ChartLineDots() {
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent className="" active={false} payload={[]} label="" />}
+              labelFormatter={(value) => value}
+              labelClassName="font-bold"
+              formatter={(value) => value}
+              
+              
             />
             <Line
               dataKey="desktop"
