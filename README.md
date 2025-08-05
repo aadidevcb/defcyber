@@ -59,18 +59,8 @@ A comprehensive cybersecurity defense system featuring real-time memory monitori
 git clone https://github.com/aadidevcb/defcyber.git
 cd defcyber
 
-# Build security binaries
-cd security
-docker build -t defcyber-security .
-
-# Build backend
-cd ../backend
-docker build -t defcyber-backend .
-
-# Install and start frontend
-cd ../frontend
-npm install
-npm run dev
+# Build the complete system
+docker-compose build
 
 # Start the complete system
 docker-compose up -d
@@ -88,6 +78,7 @@ g++ -o legacy legacy.cpp
 # Backend setup
 cd ../backend
 pip install -r requirements.txt
+python manage.py makegrations
 python manage.py migrate
 python manage.py runserver
 
